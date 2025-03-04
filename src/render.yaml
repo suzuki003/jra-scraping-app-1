@@ -3,4 +3,4 @@ services:
     name: jra-scraping-app
     env: python
     buildCommand: ""
-    startCommand: "python src/app.py"
+    startCommand: "gunicorn -w 4 -b 0.0.0.0:8000 src.app:app"
