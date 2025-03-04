@@ -10,8 +10,8 @@ import logging
 # ログの設定
 logging.basicConfig(level=logging.INFO)
 
-# キャッシュを有効にする
-requests_cache.install_cache('race_cache', expire_after=3600)
+# キャッシュを有効にするが、書き込みを無効にする
+requests_cache.install_cache('race_cache', backend='sqlite', expire_after=3600, allowable_methods=('GET',), allowable_codes=(200,), write_only=False)
 
 def scrape_race_data(url):
     with requests_cache.enabled():
@@ -91,7 +91,6 @@ def scrape_race_data(url):
                         z_score = (speed - mean_speed) / std_speed if std_speed != 0 else 0
                         z_scores.append(z_score)
                         prizes.append(math.log(prize, 10))
-                        #calculations.append(z_score)
                         calculations.append(prize * (10 ** (0.5 * z_score)))  # 計算結果を保存
                     else:
                         logging.warning(f'Missing data for race: times={other_times}, distance={distance}')
