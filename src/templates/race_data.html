@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>出馬表データ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #343a40;
+            text-align: center;
+        }
+        a {
+            display: block;
+            margin: 20px auto;
+            text-align: center;
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 1; /* 隙間をなくす */
+        }
+        table {
+            border-collapse: collapse;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 5px; /* パディングを小さくする */
+            border: 1px solid #dee2e6;
+            font-size: 16px; /* テキストの大きさを小さくする */
+            line-height: 1; /* 行の高さを調整 */
+        }
+        th {
+            background-color: #007bff;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        th:hover {
+            background-color: #0056b3;
+        }
+        td:not(:nth-child(2)) {
+            text-align: right;
+        }
+        .rank-table {
+            width: 50px;
+        }
+        .rank-table th, .rank-table td {
+            text-align: center;
+        }
+        .horse-name {
+            width: 200px; /* 馬名の列の幅を広げる */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .rank-table tbody tr, #horseTable tbody tr {
+            height: auto; /* 行の高さを自動調整 */
+        }
+    </style>
+    <script>
+        function sortTable(n, isNumeric) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("horseTable");
+            switching = true;
+            dir = "asc"; 
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+                    if (dir == "asc") {
+                        if (isNumeric) {
+                            if (parseFloat(x.innerHTML.replace(/,/g, '')) > parseFloat(y.innerHTML.replace(/,/g, ''))) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else {
+                            if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    } else if (dir == "desc") {
+                        if (isNumeric) {
+                            if (parseFloat(x.innerHTML.replace(/,/g, '')) < parseFloat(y.innerHTML.replace(/,/g, ''))) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else {
+                            if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount++;
+                } else {
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>出馬表データ</h1>
+    <a href="/">戻る</a>
+
+    <!-- 馬の評価データ -->
+    <h2>馬の評価データ</h2>
+    <div class="container">
+        <!-- 順位表 -->
+        <table class="rank-table" border="1">
+            <thead>
+                <tr>
+                    <th>順位</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for horse in horse_data %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- 馬の評価データ表 -->
+        <table id="horseTable" border="1">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0, true)">馬番</th>
+                    <th onclick="sortTable(1, false)">馬名</th>
+                    <th onclick="sortTable(2, true)">オッズ</th>
+                    <th onclick="sortTable(3, true)">馬の評価値</th>
+                    <th onclick="sortTable(4, true)">馬の期待値</th>
+                    <!--
+                    <th>計算結果1</th>
+                    <th>計算結果2</th>
+                    <th>計算結果3</th>
+                    <th>計算結果4</th>
+                    -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for horse in horse_data %}
+                <tr>
+                    <td>{{ horse.number }}</td>
+                    <td class="horse-name">{{ horse.name }}</td>
+                    <td>{{ horse.odds }}</td>
+                    <td>{{ horse.rating | int }}</td>
+                    <td>{{ horse.expected_value | int }}</td>
+                    <!--
+                    {% for calc in horse.calculations %}
+                    <td>{{ calc | int }}</td>
+                    {% endfor %}
+                    {% for i in range(4 - horse.calculations|length) %}
+                    <td></td>
+                    {% endfor %}
+                    -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 出馬表のデータ -->
+    <h2>出馬表のデータ</h2>
+    <table border="1">
+        <tbody>
+            {% for row in race_data %}
+            <tr>
+                {% for col in row %}
+                <td>{{ col }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

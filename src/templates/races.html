@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>レース選択</title>
+</head>
+<body>
+    <h1>レース選択</h1>
+    <ul>
+        {% for race_number in range(1, 13) %}
+        <li><a href="/scrape?date={{ date }}&venue={{ venue }}&race_number={{ race_number }}">{{ race_number }}R</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
