@@ -43,7 +43,7 @@ def scrape_race_data(url):
             name_div = row.find('div', class_='name')
             odds_div = row.find('span', class_='num')
             name = name_div.text.strip() if name_div else 'N/A'
-            odds = odds_div.text.strip() if odds_div else 'N/A'
+            odds = odds_div.text.strip() if odds_div else '0'
             
             # オッズが「除外」の場合は0に設定
             if odds == '除外' or odds == '取消':
