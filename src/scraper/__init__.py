@@ -113,10 +113,12 @@ def scrape_race_data(url):
             # 馬の期待値を計算
             expected_value = float(odds) * rating if odds != 'N/A' else 'N/A'
             
+            '''
             # オッズが0の場合は評価値と期待値も0に設定
             if float(odds) == 0:
                 rating = 0
                 expected_value = 0
+            '''
             
             horse_data.append({
                 'number': number,
