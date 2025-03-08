@@ -1,3 +1,4 @@
+import os
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
@@ -182,12 +183,33 @@ def scrape_race_times_and_prize(url):
     
     return times, prize, distance
 
+import os
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+from concurrent.futures import ThreadPoolExecutor
+import numpy as np
+import math
+import logging
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, StaleElementReferenceException
+
+# ログの設定
+logging.basicConfig(level=logging.INFO)
+
 def scrape_jra_races():
-    # Chromeの実行ファイルのパスを指定
-    chrome_path = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"  # 例: Windowsの場合
+    # Render環境でのChromeの実行ファイルのパスを指定
+    chrome_path = "/usr/bin/google-chrome-stable"
     options = webdriver.ChromeOptions()
     options.binary_location = chrome_path
     options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
     
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
     
