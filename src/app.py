@@ -1,6 +1,6 @@
 import os
-from flask import Flask, request, jsonify, render_template
-from scraper import scrape_race_data
+from flask import Flask, request, jsonify, render_template, url_for
+from scraper import scrape_race_data, scrape_jra_races
 
 app = Flask(__name__)
 
@@ -22,6 +22,12 @@ def scrape():
         return render_template('race_data.html', race_data=race_data, horse_data=horse_data)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/race_selection')
+def race_selection():
+    # JRAの公式サイトからレース情報をスクレイピング
+    race_data = scrape_jra_races()
+    return render_template('race_selection.html', races=race_data)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

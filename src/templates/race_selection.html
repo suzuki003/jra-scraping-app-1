@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>レース選択</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 800px;
+            margin: auto;
+        }
+        h1 {
+            color: #343a40;
+            margin-bottom: 20px;
+        }
+        .race-group {
+            margin-bottom: 20px;
+        }
+        .race-group h2 {
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .race-button {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .race-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>レース選択</h1>
+        {% for race_info in races %}
+        <div class="race-group">
+            <h2>{{ race_info.date }} {{ race_info.venue }}</h2>
+            {% for race in race_info.races %}
+            <a href="{{ url_for('scrape', url=race.url) }}" class="race-button">
+                レース{{ race.number }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

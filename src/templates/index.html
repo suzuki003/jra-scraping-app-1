@@ -2,51 +2,57 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>レース選択</title>
+    <title>出馬表の評価</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f8f9fa;
             margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            background-color: #ffffff;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
         }
         h1 {
             color: #343a40;
-            margin-bottom: 20px;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        form {
+            margin-top: 20px;
         }
         label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
+            font-size: 18px;
         }
         input[type="text"] {
-            width: 100%;
             padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
+            font-size: 16px;
+            margin-right: 10px;
+            width: 300px;
         }
         button {
+            padding: 10px 20px;
+            font-size: 16px;
             background-color: #007bff;
             color: #ffffff;
-            padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
         }
         button:hover {
             background-color: #0056b3;
+        }
+        .link-container {
+            margin-top: 20px;
+        }
+        .link-container a {
+            text-decoration: none;
+            color: #007bff;
+            font-size: 18px;
+        }
+        .link-container a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -58,6 +64,9 @@
             <input type="text" id="url" name="url" required>
             <button type="submit">出馬表を表示</button>
         </form>
+        <div class="link-container">
+            <a href="{{ url_for('race_selection') }}">レース選択ページへ(※読み込みクッソ遅い)</a>
+        </div>
     </div>
 </body>
 </html>

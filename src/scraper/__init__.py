@@ -1,20 +1,22 @@
 import requests
-import requests_cache
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 import math
 import logging
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, StaleElementReferenceException
 
 # ログの設定
 logging.basicConfig(level=logging.INFO)
 
-# キャッシュを無効にするためにコメントアウト
-# requests_cache.install_cache('race_cache', expire_after=3600)
-
 def scrape_race_data(url):
-    # with requests_cache.enabled():
     response = requests.get(url)
     response.encoding = response.apparent_encoding
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -132,7 +134,6 @@ def scrape_race_data(url):
     return race_data, horse_data
 
 def scrape_race_times_and_prize(url):
-    # with requests_cache.enabled():
     response = requests.get(url, timeout=10)  # タイムアウトを設定
     response.encoding = response.apparent_encoding
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -180,3 +181,108 @@ def scrape_race_times_and_prize(url):
                 prize = float(first_prize.text)
     
     return times, prize, distance
+
+def scrape_jra_races():
+    # Seleniumを使用してJRAの公式サイトからレース情報をスクレイピング
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+    
+    base_url = 'https://www.jra.go.jp/'
+    driver.get(base_url)
+    
+    # ページの読み込みが完了するまで待機
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
+    
+    # 「出馬表」をクリック
+    try:
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//div[text()='出馬表']"))).click()
+    except TimeoutException:
+        logging.error("出馬表のリンクが見つかりませんでした。")
+        driver.quit()
+        return []
+    
+    race_data = []
+    waku_buttons = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'waku')))
+    num_waku_buttons = len(waku_buttons)
+    
+    for i in range(num_waku_buttons):
+        try:
+            waku_buttons[i].click()
+            
+            # ページ遷移後に待機
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'race_num')))
+            
+            # 開催日と開催競馬場の情報を取得
+            try:
+                # 'race_list' IDを持つ要素がページに存在するまで最大10秒間待機します。
+                main_div = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'race_list')))
+                logging.info("Main div found")
+                
+                # 'race_list' IDを持つ要素の中から、最初の 'h2' タグを見つけ、そのテキストを取得します。
+                race_info = main_div.find_element(By.TAG_NAME, 'h2').text.strip()
+                logging.info(f"Race info text: {race_info}")
+                
+                # 取得したテキストをスペースで分割し、リストにします。
+                race_info_list = race_info.split(' ')
+                
+                # リストの最初の要素を開催日として取得します。
+                race_date = race_info_list[0]
+                
+                # リストの2番目の要素を開催競馬場として取得します。
+                race_venue = race_info_list[1]
+                
+                # 取得した開催日と開催競馬場の情報をログに出力します。
+                logging.info(f"Race Date: {race_date}, Race Venue: {race_venue}")
+            except TimeoutException:
+                logging.error("開催日と開催競馬場の情報が見つかりませんでした。")
+                driver.quit()
+                return []
+            except NoSuchElementException:
+                logging.error("開催日と開催競馬場の情報が見つかりませんでした。")
+                driver.quit()
+                return []
+            
+            # レース番号のボタンから出馬表のURLを取得
+            race_urls = []
+            race_num_buttons = driver.find_elements(By.CLASS_NAME, 'race_num')
+            for race_button in race_num_buttons[1:]:  # 最初の要素を無視
+                try:
+                    race_url = race_button.find_element(By.TAG_NAME, 'a').get_attribute('href')
+                    race_number = race_button.find_element(By.TAG_NAME, 'img').get_attribute('alt').replace('レース', '')
+                    race_urls.append({
+                        'url': race_url,
+                        'number': race_number
+                    })
+                    logging.info(f"Race URL: {race_url}, Race Number: {race_number}")
+                except NoSuchElementException:
+                    logging.error("レース番号のリンクが見つかりませんでした。")
+                except StaleElementReferenceException:
+                    logging.error("レース番号のリンクが無効になりました。再取得を試みます。")
+                    race_num_buttons = driver.find_elements(By.CLASS_NAME, 'race_num')
+            
+            race_data.append({
+                'date': race_date,
+                'venue': race_venue,
+                'races': race_urls
+            })
+        except TimeoutException:
+            logging.error("レース番号のボタンが見つかりませんでした。")
+        
+        # 元のページに戻る
+        driver.get(base_url)
+        
+        # 「出馬表」を再度クリック
+        try:
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//div[text()='出馬表']"))).click()
+        except TimeoutException:
+            logging.error("出馬表のリンクが見つかりませんでした。")
+            driver.quit()
+            return []
+        
+        # クリック済みの `waku` 要素をスキップ
+        waku_buttons = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'waku')))
+    
+    driver.quit()
+    
+    return race_data
