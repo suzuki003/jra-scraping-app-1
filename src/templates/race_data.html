@@ -14,10 +14,11 @@
             color: #343a40;
             text-align: center;
         }
+        .center {
+            text-align: center; /* 中央揃えにする */
+        }
         a {
-            display: block;
-            margin: 20px auto;
-            text-align: center;
+            display: inline; /* ここを変更 */
             color: #007bff;
             text-decoration: none;
         }
@@ -123,7 +124,9 @@
 </head>
 <body>
     <h1>出馬表データ</h1>
-    <a href="/">戻る</a>
+    <div class="center">
+        <a href="/">戻る</a>
+    </div>
 
     <!-- 馬の評価データ -->
     <h2>馬の評価データ</h2>
