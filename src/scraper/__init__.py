@@ -204,7 +204,10 @@ logging.basicConfig(level=logging.INFO)
 
 def scrape_jra_races():
     # Render環境でのChromeの実行ファイルのパスを指定
-    chrome_path = "/usr/bin/google-chrome-stable"
+    #chrome_path = "/usr/bin/google-chrome-stable"
+    # ローカル環境でのChromeの実行ファイルのパスを指定
+    chrome_path = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+    
     options = webdriver.ChromeOptions()
     options.binary_location = chrome_path
     options.add_argument('--headless')

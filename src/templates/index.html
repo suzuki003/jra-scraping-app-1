@@ -54,7 +54,43 @@
         .link-container a:hover {
             text-decoration: underline;
         }
+        .content-section {
+            margin-top: 40px;
+            width: 80%;
+        }
+        .content-section h2 {
+            color: #343a40;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .content-section p {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #495057;
+        }
+        .math {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 18px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
     </style>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
@@ -62,10 +98,138 @@
         <form action="/scrape" method="get">
             <label for="url">出馬表のURL:</label>
             <input type="text" id="url" name="url" required>
-            <button type="submit">出馬表を表示</button>
+            <button type="submit">表示</button>
         </form>
+        <!-- Render環境ではまだ使えないのでコメントアウト -->
+        <!--
         <div class="link-container">
             <a href="{{ url_for('race_selection') }}">レース選択ページへ(※読み込みクッソ遅い)</a>
+        </div>
+        -->
+        <div class="content-section">
+            <h2>このアプリの使い方</h2>
+            <p>JRAの公式サイトで出馬表のページに行き、URLをコピーして上部の入力欄に貼り付けます。
+                その後、表示ボタンを押すと、各馬の評価値が表示されます。
+            </p>
+        </div>
+        <div class="content-section">
+            <h2>評価値の計算式について</h2>
+            <p>
+                このアプリでは、各馬の過去のレース結果を基にして評価値を計算しています。具体的な計算式は以下の通りです：
+                <br><br>
+                1. 各馬の過去のレースタイムを取得します。<br>
+                2. 各レースの距離を基に、各馬の平均速度(m/s)を計算します。<br>
+                3. 各レースの平均速度の平均値と標準偏差を計算します。<br>
+                4. 各馬の速度を標準化し、zスコアを計算します。<br>
+                5. 各レースの賞金額を基に、各馬の評価値を計算します。<br>
+                <br>
+                zスコアの計算式は以下の通りです：
+                <br>
+                <span class="math">$$zスコア = \frac{馬の平均速度 - 平均速度の平均値}{平均速度の標準偏差}$$</span>
+                <br><br>
+                評価値の計算式は以下の通りです：
+                <br>
+                <span class="math">$$評価値 = \frac{4}{n} \times \sum_{i=1}^{n} \log_{10}\left(\frac{賞金額_{i}}{10000}\right) \times 10^{0.5 \times zスコア_{i}}$$</span>
+                ※nは最大4つの過去のレース数を表します。
+                <br><br>
+                この評価値を基に、各馬のパフォーマンスを評価し、ランキングを作成します。
+            </p>
+        </div>
+        <div class="content-section">
+            <h2>レース結果との相関について</h2>
+            <p>
+                以下の表とグラフは、2025年3月上旬の132レース分のレース結果と評価値の相関を示しています。
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>評価値順位</th>
+                        <th>1着回数</th>
+                        <th>2着回数</th>
+                        <th>3着回数</th>
+                        <th>4着回数</th>
+                        <th>5着回数</th>
+                        <th>5着以内合計</th>
+                        <th>3着以内合計</th>
+                        <th>5着以内割合</th>
+                        <th>3着以内割合</th>
+                        <th>1着割合</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>30</td><td>21</td><td>11</td><td>13</td><td>11</td><td>86</td><td>62</td><td>65.15%</td><td>46.97%</td><td>22.73%</td></tr>
+                    <tr><td>2</td><td>26</td><td>21</td><td>15</td><td>10</td><td>12</td><td>84</td><td>62</td><td>63.64%</td><td>46.97%</td><td>19.70%</td></tr>
+                    <tr><td>3</td><td>15</td><td>6</td><td>19</td><td>17</td><td>21</td><td>78</td><td>40</td><td>59.09%</td><td>30.30%</td><td>11.36%</td></tr>
+                    <tr><td>4</td><td>17</td><td>14</td><td>9</td><td>13</td><td>14</td><td>67</td><td>40</td><td>50.76%</td><td>30.30%</td><td>12.88%</td></tr>
+                    <tr><td>5</td><td>6</td><td>9</td><td>19</td><td>15</td><td>11</td><td>60</td><td>34</td><td>45.45%</td><td>25.76%</td><td>4.55%</td></tr>
+                    <tr><td>6</td><td>7</td><td>16</td><td>10</td><td>8</td><td>6</td><td>47</td><td>33</td><td>35.61%</td><td>25.00%</td><td>5.30%</td></tr>
+                    <tr><td>7</td><td>6</td><td>11</td><td>10</td><td>10</td><td>6</td><td>43</td><td>27</td><td>32.58%</td><td>20.45%</td><td>4.55%</td></tr>
+                    <tr><td>8</td><td>6</td><td>6</td><td>4</td><td>12</td><td>13</td><td>41</td><td>16</td><td>31.06%</td><td>12.12%</td><td>4.55%</td></tr>
+                    <tr><td>9</td><td>4</td><td>9</td><td>8</td><td>11</td><td>5</td><td>37</td><td>21</td><td>28.03%</td><td>15.91%</td><td>3.03%</td></tr>
+                    <tr><td>10</td><td>3</td><td>2</td><td>9</td><td>8</td><td>7</td><td>29</td><td>14</td><td>21.97%</td><td>10.61%</td><td>2.27%</td></tr>
+                    <tr><td>11</td><td>3</td><td>6</td><td>5</td><td>1</td><td>6</td><td>21</td><td>14</td><td>15.91%</td><td>10.61%</td><td>2.27%</td></tr>
+                    <tr><td>12</td><td></td><td></td><td>2</td><td>7</td><td>4</td><td>13</td><td>2</td><td>9.85%</td><td>1.52%</td><td>0.00%</td></tr>
+                    <tr><td>13</td><td>3</td><td>3</td><td>2</td><td>1</td><td>4</td><td>13</td><td>8</td><td>9.85%</td><td>6.06%</td><td>2.27%</td></tr>
+                    <tr><td>14</td><td></td><td>1</td><td>2</td><td>2</td><td>4</td><td>9</td><td>3</td><td>6.82%</td><td>2.27%</td><td>0.00%</td></tr>
+                    <tr><td>15</td><td>1</td><td>1</td><td>2</td><td></td><td>2</td><td>6</td><td>4</td><td>4.55%</td><td>3.03%</td><td>0.76%</td></tr>
+                    <tr><td>16</td><td></td><td></td><td>2</td><td></td><td></td><td>2</td><td>2</td><td>1.52%</td><td>1.52%</td><td>0.00%</td></tr>
+                    <tr><td>17</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td>0</td><td>0.00%</td><td>0.00%</td><td>0.00%</td></tr>
+                    <tr><td>18</td><td></td><td>1</td><td></td><td></td><td></td><td>1</td><td>1</td><td>0.76%</td><td>0.76%</td><td>0.00%</td></tr>
+                    <tr><td>計算不能</td><td>5</td><td>5</td><td>4</td><td>3</td><td>6</td><td>23</td><td>14</td><td>17.42%</td><td>10.61%</td><td>3.79%</td></tr>
+                    <tr><td>合計</td><td>132</td><td>132</td><td>133</td><td>131</td><td>132</td><td>660</td><td>397</td><td>500.00%</td><td>300.76%</td><td>100.00%</td></tr>
+                </tbody>
+            </table>
+            <canvas id="correlationChart" width="400" height="200"></canvas>
+            <script>
+                var ctx = document.getElementById('correlationChart').getContext('2d');
+                var correlationChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '計算不能'],
+                        datasets: [{
+                            label: '5着以内割合',
+                            data: [65.15, 63.64, 59.09, 50.76, 45.45, 35.61, 32.58, 31.06, 28.03, 21.97, 15.91, 9.85, 9.85, 6.82, 4.55, 1.52, 0.00, 0.76, 17.42],
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }, {
+                            label: '3着以内割合',
+                            data: [46.97, 46.97, 30.30, 30.30, 25.76, 25.00, 20.45, 12.12, 15.91, 10.61, 10.61, 1.52, 6.06, 2.27, 3.03, 1.52, 0.00, 0.76, 10.61],
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }, {
+                            label: '1着割合',
+                            data: [22.73, 19.70, 11.36, 12.88, 4.55, 5.30, 4.55, 4.55, 3.03, 2.27, 2.27, 0.00, 2.27, 0.00, 0.76, 0.00, 0.00, 0.00, 3.79],
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            </script>
+        </div>
+        <div class="content-section">
+            <h2>評価値の活用の仕方の例</h2>
+            <p>
+                表の評価値をクリックし、ソートすることで、評価値の高い馬を上位に表示させることができます。
+                すると、評価値が高いにもかかわらず、オッズが高い馬を見つけることができるかもしれません。
+                そのような馬について、過去のレース結果を調べ、実際に勝ちやすい馬かどうかを判断することができます。
+                特にレース映像はよく確認して、レース展開の再現性を確認することが重要です。
+                勝利を確信できたなら、その馬は穴馬と言えるでしょう。
+            </p>
         </div>
     </div>
 </body>
